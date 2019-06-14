@@ -159,10 +159,10 @@ ObjectListNode::ObjectListNode()
         Error::Error_1303_PCHCreateOptionOnlyAllowedOnPCH( iter, function, "Yc", "CompilerOptions" );
         return false;
     }
-    if ( ((FunctionObjectList *)function)->CheckCompilerOptions( iter, m_CompilerOptions, objFlags ) == false )
+    /*if ( ((FunctionObjectList *)function)->CheckCompilerOptions( iter, m_CompilerOptions, objFlags ) == false )
     {
         return false; // CheckCompilerOptions will have emitted an error
-    }
+    }*/
 
     // .Preprocessor
     CompilerNode * preprocessorNode( nullptr );
