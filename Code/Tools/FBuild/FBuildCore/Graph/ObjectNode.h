@@ -112,6 +112,8 @@ private:
     bool ProcessIncludesMSCL( const char * output, uint32_t outputSize );
     bool ProcessIncludesWithPreProcessor( Job * job );
 
+	void TryWriteIncludes();
+
     const AString & GetCacheName( Job * job ) const;
     bool RetrieveFromCache( Job * job );
     void WriteToCache( Job * job );
@@ -197,6 +199,8 @@ private:
     bool                m_DeoptimizeWritableFilesWithToken  = false;
     bool                m_AllowDistribution                 = true;
     bool                m_AllowCaching                      = true;
+	bool                m_UseLightCache                     = true;
+	bool                m_WriteInclude                      = false;
     Array< AString >    m_CompilerForceUsing;
     AString             m_Preprocessor;
     AString             m_PreprocessorOptions;

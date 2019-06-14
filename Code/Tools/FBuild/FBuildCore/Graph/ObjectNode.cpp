@@ -57,6 +57,8 @@ REFLECT_NODE_BEGIN( ObjectNode, Node, MetaNone() )
     REFLECT( m_DeoptimizeWritableFilesWithToken,    "DeoptimizeWritableFilesWithToken", MetaOptional() )
     REFLECT( m_AllowDistribution,                   "AllowDistribution",                MetaOptional() )
     REFLECT( m_AllowCaching,                        "AllowCaching",                     MetaOptional() )
+	REFLECT( m_UseLightCache,                       "UseLightCache",                    MetaOptional() )
+	REFLECT( m_WriteInclude,                        "WriteInclude",                     MetaOptional())
     REFLECT_ARRAY( m_CompilerForceUsing,            "CompilerForceUsing",               MetaOptional() + MetaFile() )
 
     // Preprocessor
@@ -359,6 +361,8 @@ ObjectNode::~ObjectNode()
         return NODE_RESULT_FAILED; // ProcessIncludesMSCL will have emitted an error
     }
 
+	TryWriteIncludes();
+
     // record new file time
     RecordStampFromBuiltFile();
 
@@ -379,7 +383,7 @@ Node::BuildResult ObjectNode::DoBuildWithPreProcessor( Job * job, bool useDeopti
     }
 
     // Try to use the light cache if enabled
-    if ( useCache && GetCompiler()->GetUseLightCache() )
+    if ( useCache && GetCompiler()->GetUseLightCache() && m_UseLightCache )
     {
         LightCache lc;
         if ( lc.Hash( this, fullArgs.GetFinalArgs(), m_LightCacheKey, m_Includes ) == false )
@@ -396,6 +400,8 @@ Node::BuildResult ObjectNode::DoBuildWithPreProcessor( Job * job, bool useDeopti
         {
             // LightCache hashing was successful
             SetStatFlag( Node::STATS_LIGHT_CACHE ); // Light compatible
+
+			TryWriteIncludes();
 
             // Try retrieve from cache
             GetCacheName( job ); // Prepare the cache key (always done here even if write only mode)
@@ -432,6 +438,8 @@ Node::BuildResult ObjectNode::DoBuildWithPreProcessor( Job * job, bool useDeopti
         {
             return NODE_RESULT_FAILED; // ProcessIncludesWithPreProcessor will have emitted an error
         }
+
+		TryWriteIncludes();
     }
 
     if ( pass == PASS_PREP_FOR_SIMPLE_DISTRIBUTION )
@@ -802,6 +810,41 @@ bool ObjectNode::ProcessIncludesWithPreProcessor( Job * job )
     FLOG_INFO( "Process Includes:\n - File: %s\n - Time: %u ms\n - Num : %u", m_Name.Get(), uint32_t( t.GetElapsedMS() ), uint32_t( m_Includes.GetSize() ) );
 
     return true;
+}
+
+void ObjectNode::TryWriteIncludes()
+{
+	if (!m_WriteInclude)
+	{
+		return;
+	}
+
+	const char* lastDot = m_Name.FindLast('.');
+	lastDot = lastDot ? lastDot : m_Name.GetEnd();
+	AString showincludeFileName(m_Name.Get(), lastDot);
+	showincludeFileName += ".txt";
+	FLOG_INFO("WriteIncludes (%d): %s", m_Includes.GetSize(), showincludeFileName.Get());
+
+	AString showincludeContent;
+	for (Array< AString >::ConstIter it = m_Includes.Begin();
+		it != m_Includes.End();
+		it++)
+	{
+		showincludeContent += *it;
+		showincludeContent += "\r\n";
+	}
+
+	// actually write
+	FileStream f;
+	if (!f.Open(showincludeFileName.Get(), FileStream::WRITE_ONLY))
+	{
+		FLOG_ERROR("SLN - Failed to open file for write. Error: %s Target: '%s'", LAST_ERROR_STR, showincludeFileName.Get());
+	}
+	if (f.Write(showincludeContent.Get(), showincludeContent.GetLength()) != showincludeContent.GetLength())
+	{
+		FLOG_ERROR("SLN - Error writing file. Error: %s Target: '%s'", LAST_ERROR_STR, showincludeFileName.Get());
+	}
+	f.Close();
 }
 
 // LoadRemote

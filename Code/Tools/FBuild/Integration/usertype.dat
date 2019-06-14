@@ -38,6 +38,7 @@ XCodeProject
 AdditionalOptions
 AdditionalSymbolSearchPaths
 AllowCaching
+WriteInclude
 AllowDistribution
 ApplicationEnvironment
 ApplicationType
