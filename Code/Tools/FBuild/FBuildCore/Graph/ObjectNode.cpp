@@ -59,6 +59,7 @@ REFLECT_NODE_BEGIN( ObjectNode, Node, MetaNone() )
     REFLECT( m_AllowCaching,                        "AllowCaching",                     MetaOptional() )
 	REFLECT( m_UseLightCache,                       "UseLightCache",                    MetaOptional() )
 	REFLECT( m_WriteInclude,                        "WriteInclude",                     MetaOptional())
+	REFLECT(m_WriteIncludeFile,                     "WriteIncludeFile",                 MetaOptional())
     REFLECT_ARRAY( m_CompilerForceUsing,            "CompilerForceUsing",               MetaOptional() + MetaFile() )
 
     // Preprocessor
@@ -819,11 +820,15 @@ void ObjectNode::TryWriteIncludes()
 		return;
 	}
 
-	const char* lastDot = m_Name.FindLast('.');
-	lastDot = lastDot ? lastDot : m_Name.GetEnd();
-	AString showincludeFileName(m_Name.Get(), lastDot);
-	showincludeFileName += ".txt";
-	FLOG_INFO("WriteIncludes (%d): %s", m_Includes.GetSize(), showincludeFileName.Get());
+	if (m_WriteIncludeFile.IsEmpty())
+	{
+		const char* lastDot = m_Name.FindLast('.');
+		lastDot = lastDot ? lastDot : m_Name.GetEnd();
+		AString showincludeFileName(m_Name.Get(), lastDot);
+		showincludeFileName += ".txt";
+		m_WriteIncludeFile = showincludeFileName;
+	}
+	FLOG_INFO("WriteIncludes (%d): %s", m_Includes.GetSize(), m_WriteIncludeFile.Get());
 
 	AString showincludeContent;
 	for (Array< AString >::ConstIter it = m_Includes.Begin();
@@ -836,13 +841,13 @@ void ObjectNode::TryWriteIncludes()
 
 	// actually write
 	FileStream f;
-	if (!f.Open(showincludeFileName.Get(), FileStream::WRITE_ONLY))
+	if (!f.Open(m_WriteIncludeFile.Get(), FileStream::WRITE_ONLY))
 	{
-		FLOG_ERROR("SLN - Failed to open file for write. Error: %s Target: '%s'", LAST_ERROR_STR, showincludeFileName.Get());
+		FLOG_ERROR("SLN - Failed to open file for write. Error: %s Target: '%s'", LAST_ERROR_STR, m_WriteIncludeFile.Get());
 	}
 	if (f.Write(showincludeContent.Get(), showincludeContent.GetLength()) != showincludeContent.GetLength())
 	{
-		FLOG_ERROR("SLN - Error writing file. Error: %s Target: '%s'", LAST_ERROR_STR, showincludeFileName.Get());
+		FLOG_ERROR("SLN - Error writing file. Error: %s Target: '%s'", LAST_ERROR_STR, m_WriteIncludeFile.Get());
 	}
 	f.Close();
 }

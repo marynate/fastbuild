@@ -90,6 +90,7 @@ protected:
     bool                m_AllowCaching                      = true;
 	bool                m_UseLightCache                     = true;
 	bool                m_WriteInclude                      = false;
+	AString             m_WriteIncludeFile;
     AString             m_PCHInputFile;
     AString             m_PCHOutputFile;
     AString             m_PCHOptions;

@@ -52,6 +52,7 @@ REFLECT_NODE_BEGIN( ObjectListNode, Node, MetaNone() )
     REFLECT( m_Hidden,                              "Hidden",                           MetaOptional() )
 	REFLECT( m_UseLightCache,                       "UseLightCache",                    MetaOptional() )
 	REFLECT( m_WriteInclude,                        "WriteInclude",                     MetaOptional() )
+	REFLECT(m_WriteIncludeFile,                     "WriteIncludeFile",                 MetaOptional() )
 
     // Precompiled Headers
     REFLECT( m_PCHInputFile,                        "PCHInputFile",                     MetaOptional() + MetaFile() )
@@ -724,6 +725,7 @@ ObjectNode * ObjectListNode::CreateObjectNode( NodeGraph & nodeGraph,
     node->m_AllowCaching = m_AllowCaching;
 	node->m_UseLightCache = m_UseLightCache;
 	node->m_WriteInclude = m_WriteInclude;
+	node->m_WriteIncludeFile = m_WriteIncludeFile;
     node->m_CompilerForceUsing = m_CompilerForceUsing;
     node->m_PreBuildDependencyNames = m_PreBuildDependencyNames;
     node->m_PrecompiledHeader = m_UsingPrecompiledHeader ? GetPrecompiledHeader()->GetName() : AString::GetEmpty();

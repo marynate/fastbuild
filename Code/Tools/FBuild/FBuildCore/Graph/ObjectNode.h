@@ -201,6 +201,7 @@ private:
     bool                m_AllowCaching                      = true;
 	bool                m_UseLightCache                     = true;
 	bool                m_WriteInclude                      = false;
+	AString             m_WriteIncludeFile;
     Array< AString >    m_CompilerForceUsing;
     AString             m_Preprocessor;
     AString             m_PreprocessorOptions;
