@@ -88,9 +88,9 @@ protected:
     bool                m_DeoptimizeWritableFilesWithToken  = false;
     bool                m_AllowDistribution                 = true;
     bool                m_AllowCaching                      = true;
-	bool                m_UseLightCache                     = true;
-	bool                m_WriteInclude                      = false;
-	AString             m_WriteIncludeFile;
+    bool                m_UseLightCache                     = true;
+    bool                m_WriteInclude                      = false;
+    AString             m_WriteIncludeFile;
     AString             m_PCHInputFile;
     AString             m_PCHOutputFile;
     AString             m_PCHOptions;

@@ -57,9 +57,9 @@ REFLECT_NODE_BEGIN( ObjectNode, Node, MetaNone() )
     REFLECT( m_DeoptimizeWritableFilesWithToken,    "DeoptimizeWritableFilesWithToken", MetaOptional() )
     REFLECT( m_AllowDistribution,                   "AllowDistribution",                MetaOptional() )
     REFLECT( m_AllowCaching,                        "AllowCaching",                     MetaOptional() )
-	REFLECT( m_UseLightCache,                       "UseLightCache",                    MetaOptional() )
-	REFLECT( m_WriteInclude,                        "WriteInclude",                     MetaOptional())
-	REFLECT(m_WriteIncludeFile,                     "WriteIncludeFile",                 MetaOptional())
+    REFLECT( m_UseLightCache,                       "UseLightCache",                    MetaOptional() )
+    REFLECT( m_WriteInclude,                        "WriteInclude",                     MetaOptional())
+    REFLECT(m_WriteIncludeFile,                     "WriteIncludeFile",                 MetaOptional())
     REFLECT_ARRAY( m_CompilerForceUsing,            "CompilerForceUsing",               MetaOptional() + MetaFile() )
 
     // Preprocessor
@@ -362,7 +362,7 @@ ObjectNode::~ObjectNode()
         return NODE_RESULT_FAILED; // ProcessIncludesMSCL will have emitted an error
     }
 
-	TryWriteIncludes();
+    TryWriteIncludes();
 
     // record new file time
     RecordStampFromBuiltFile();
@@ -402,7 +402,7 @@ Node::BuildResult ObjectNode::DoBuildWithPreProcessor( Job * job, bool useDeopti
             // LightCache hashing was successful
             SetStatFlag( Node::STATS_LIGHT_CACHE ); // Light compatible
 
-			TryWriteIncludes();
+            TryWriteIncludes();
 
             // Try retrieve from cache
             GetCacheName( job ); // Prepare the cache key (always done here even if write only mode)
@@ -440,7 +440,7 @@ Node::BuildResult ObjectNode::DoBuildWithPreProcessor( Job * job, bool useDeopti
             return NODE_RESULT_FAILED; // ProcessIncludesWithPreProcessor will have emitted an error
         }
 
-		TryWriteIncludes();
+        TryWriteIncludes();
     }
 
     if ( pass == PASS_PREP_FOR_SIMPLE_DISTRIBUTION )
