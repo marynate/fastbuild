@@ -76,7 +76,7 @@ Client::~Client()
     ASSERT( ss );
 
     MutexHolder mh( ss->m_Mutex );
-    DIST_INFO( "Disconnected: %s\n", ss->m_RemoteName.Get() );
+    DIST_INFO( "[Client] Disconnected: %s\n", ss->m_RemoteName.Get() );
     if ( ss->m_Jobs.IsEmpty() == false )
     {
         Job ** it = ss->m_Jobs.Begin();
@@ -84,6 +84,7 @@ Client::~Client()
         while ( it != end )
         {
             FLOG_MONITOR( "FINISH_JOB TIMEOUT %s \"%s\" \n", ss->m_RemoteName.Get(), (*it)->GetNode()->GetName().Get() );
+			DIST_INFO("[Client] FINISH_JOB TIMEOUT %s \"%s\" \n", ss->m_RemoteName.Get(), (*it)->GetNode()->GetName().Get());
             JobQueue::Get().ReturnUnfinishedDistributableJob( *it );
             ++it;
         }
@@ -206,16 +207,16 @@ void Client::LookForWorkers()
             continue;
         }
 
-        DIST_INFO( "Connecting to: %s\n", m_WorkerList[ i ].Get() );
+        DIST_INFO( "[Client] Connecting to: %s\n", m_WorkerList[ i ].Get() );
         const ConnectionInfo * ci = Connect( m_WorkerList[ i ], m_Port, 2000, &ss ); // 2000ms connection timeout
         if ( ci == nullptr )
         {
-            DIST_INFO( " - connection: %s (FAILED)\n", m_WorkerList[ i ].Get() );
+            DIST_INFO( "[Client]  - connection: %s (FAILED)\n", m_WorkerList[ i ].Get() );
             ss.m_DelayTimer.Start(); // reset connection attempt delay
         }
         else
         {
-            DIST_INFO( " - connection: %s (OK)\n", m_WorkerList[ i ].Get() );
+            DIST_INFO( "[Client]  - connection: %s (OK)\n", m_WorkerList[ i ].Get() );
             const uint32_t numJobsAvailable = (uint32_t)JobQueue::Get().GetNumDistributableJobsAvailable();
 
             ss.m_RemoteName = m_WorkerList[ i ];
@@ -287,7 +288,7 @@ void Client::SendMessageInternal( const ConnectionInfo * connection, const Proto
         return;
     }
 
-    DIST_INFO( "Send Failed: %s (Type: %u, Size: %u)\n",
+    DIST_INFO( "[Client] Send Failed: %s (Type: %u, Size: %u)\n",
                 ((ServerState *)connection->GetUserData())->m_RemoteName.Get(),
                 (uint32_t)msg.GetType(),
                 msg.GetSize() );
@@ -302,7 +303,7 @@ void Client::SendMessageInternal( const ConnectionInfo * connection, const Proto
         return;
     }
 
-    DIST_INFO( "Send Failed: %s (Type: %u, Size: %u, Payload: %u)\n",
+    DIST_INFO( "[Client] Send Failed: %s (Type: %u, Size: %u, Payload: %u)\n",
                 ((ServerState *)connection->GetUserData())->m_RemoteName.Get(),
                 (uint32_t)msg.GetType(),
                 msg.GetSize(),
@@ -376,7 +377,7 @@ void Client::SendMessageInternal( const ConnectionInfo * connection, const Proto
         {
             // unknown message type
             ASSERT( false ); // this indicates a protocol bug
-            DIST_INFO( "Protocol Error: %s\n", ss->m_RemoteName.Get() );
+            DIST_INFO( "[Client] Protocol Error: %s\n", ss->m_RemoteName.Get() );
             Disconnect( connection );
             break;
         }
@@ -435,6 +436,7 @@ void Client::Process( const ConnectionInfo * connection, const Protocol::MsgRequ
     // output to signify remote start
     FLOG_BUILD( "-> Obj: %s <REMOTE: %s>\n", job->GetNode()->GetName().Get(), ss->m_RemoteName.Get() );
     FLOG_MONITOR( "START_JOB %s \"%s\" \n", ss->m_RemoteName.Get(), job->GetNode()->GetName().Get() );
+	DIST_INFO("[Client] START_JOB: %s \"%s\" \n", ss->m_RemoteName.Get(), job->GetNode()->GetName().Get());
 
     {
         PROFILE_SECTION( "SendJob" )
@@ -492,7 +494,7 @@ void Client::Process( const ConnectionInfo * connection, const Protocol::MsgJobR
         return;
     }
 
-    DIST_INFO( "Got Result: %s - %s%s\n", ss->m_RemoteName.Get(),
+    DIST_INFO( "[Client] Got Result: %s - %s%s\n", ss->m_RemoteName.Get(),
                                           job->GetNode()->GetName().Get(),
                                           job->GetDistributionState() == Job::DIST_RACE_WON_REMOTELY ? " (Won Race)" : "" );
 
@@ -602,7 +604,7 @@ void Client::Process( const ConnectionInfo * connection, const Protocol::MsgJobR
             // debugging message
             const size_t workerIndex = (size_t)( ss - m_ServerList.Begin() );
             const AString & workerName = m_WorkerList[ workerIndex ];
-            DIST_INFO( "Remote System Failure!\n"
+            DIST_INFO( "[Client] Remote System Failure!\n"
                        " - Blacklisted Worker: %s\n"
                        " - Node              : %s\n"
                        " - Job Error Count   : %u / %u\n"
@@ -647,6 +649,10 @@ void Client::Process( const ConnectionInfo * connection, const Protocol::MsgJobR
                       job->GetNode()->GetName().Get(),
                       msgBuffer.Get() );
     }
+	DIST_INFO("[Client] FINISH_JOB %s %s \"%s\"\n",
+		result ? "SUCCESS" : "ERROR",
+		ss->m_RemoteName.Get(),
+		job->GetNode()->GetName().Get());
 
     JobQueue::Get().FinishedProcessingJob( job, result, true ); // remote job
 }
